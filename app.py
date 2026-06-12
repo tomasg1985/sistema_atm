@@ -130,3 +130,6 @@ while cajero_encendido:
 
         case _:
             print(Fore.RED + "Opción inválida, ingrese alguna opción del menú")
+
+conexion.close()
+print(f"{Fore.GREEN}Conexión cerrada. ¡Hasta luego!{Style.RESET_ALL}")
