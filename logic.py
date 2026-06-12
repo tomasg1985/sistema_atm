@@ -12,7 +12,7 @@ cursor.execute('''
         contrasena TEXT NOT NULL
     )
 ''')
-
+conexion.commit()
 
 mensaje_exito = "Transaccion exitosa"
 mensaje_error = "Transaccion fallida"
