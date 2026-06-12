@@ -1,61 +1,77 @@
-# 🏧 Simulación de Cajero Automático (ATM)
+# 🏧 Simulación de Cajero Automático (ATM) con Motor Relacional SQL
 
-Una aplicación interactiva desarrollada en **Python** que simula el flujo lógico y las operaciones financieras esenciales de un cajero automático real. Este proyecto destaca por su arquitectura altamente modular, segregación de responsabilidades y un sistema riguroso de validación de entradas para garantizar la estabilidad del sistema sin depender de librerías externas complejas.
+Una aplicación financiera transaccional desarrollada en **Python** que modela el comportamiento lógico, matemático y de seguridad de un cajero automático real. Este ecosistema implementa persistencia local mediante **SQLite**, gestionando transacciones financieras de forma atómica y aplicando control de excepciones riguroso junto con validaciones de tipo estrictas.
 
 ---
 
-### 🚀 Características Técnicas
+### 🚀 Innovaciones y Características Técnicas
 
-*   **Arquitectura Modular Avanzada:** División estricta del sistema en módulos especializados (Presentación, Núcleo Lógico y Capa de Validación) para facilitar el mantenimiento y escalabilidad.
-*   **Validación de Entradas Rigurosa:** Mecanismos integrados para sanitizar y controlar las acciones del usuario, mitigando desbordamientos, ingresos de tipos de datos incorrectos o transacciones inválidas.
-*   **Operaciones Bancarias Simuladas:** Implementación completa del flujo transaccional clásico, incluyendo consulta de saldos, depósitos, retiros de efectivo y transferencias.
-*   **Interfaz Optimizada (UX):** Entorno por línea de comandos interactivo potenciado con **Colorama** para ofrecer alertas visuales claras (Éxitos, Advertencias y Errores).
+*   **Persistencia de Estados Financieros (SQLite):** Migración de variables volátiles en memoria hacia un motor de base de datos embebido, permitiendo que el saldo disponible y los parámetros de seguridad persistan entre sesiones de ejecución.
+*   **Transacciones Atómicas y Tolerancia a Fallos:** Implementación de bloques de control (`try/except sqlite3.Error`) con rutinas de reversión transaccional (`conexion.rollback()`) ante fallos del sistema físico de disco, asegurando que el saldo nunca quede en un estado corrupto.
+*   **Encapsulamiento mediante Tuplas de Control:** Las operaciones críticas (`extraer_monto`, `depositar`) devuelven estructuras inmutables de tres elementos (Saldo Actualizado, Mensaje de Estado, Flag Booleano de Éxito) para garantizar flujos de datos predecibles y seguros.
+*   **Validación de Tipos y Programación Defensiva:** Módulo de sanitización nativa (`validar_monto`) que aísla las entradas de texto de la terminal (`str`) y audita su composición mediante inspección digital (`.isdigit()`) antes de realizar castéos numéricos.
+*   **Seguridad y Reglas de Negocio:** Lógica criptográfica básica para la actualización de credenciales, controlando de forma temprana campos vacíos, redundancias de clave respecto a la actual y errores de confirmación binaria.
 
 ---
 
 ### 🛠️ Stack Tecnológico
 
 *   **Lenguaje:** Python 3.x
-*   **Librerías:** [Colorama](https://pypi.org) (Formateo estético y manejo de flujos de color en la terminal)
+*   **Motor de Persistencia:** [SQLite3](https://python.org) (Mapeo de datos relacionales en archivo local)
+*   **Librerías UX:** `colorama` (Feedback jerarquizado por colores en la consola de comandos)
 
 ---
 
-### 📂 Estructura y Modularización del Proyecto
+### 🗄️ Modelo Relacional de Datos
 
-El código fuente se encuentra distribuido de forma estratégica para cumplir con el principio de responsabilidad única:
+Al iniciar el sistema por primera vez, el motor SQL inicializa de manera automática la siguiente tabla para el control de la cuenta bancaria simulada:
 
+```sql
+CREATE TABLE IF NOT EXISTS banco(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    saldo REAL NOT NULL,
+    contrasena TEXT NOT NULL
+);
+```
 
-| Archivo | Rol en el Sistema | Descripción Técnica |
+---
+
+### 📂 API del Núcleo Lógico transaccional (`logic.py`)
+
+Las reglas financieras del ATM han sido documentadas bajo estándares de producción mediante *Docstrings* interactivos que incluyen ejemplos de pruebas conceptuales (*doctests*):
+
+| Función | Tipo de Operación | Descripción Técnica y Mecanismos de Control |
 | :--- | :--- | :--- |
-| `app.py` | **Orquestador Principal** | Punto de entrada de la aplicación. Inicializa el entorno y coordina el flujo general del cajero. |
-| `cajero_automatico.py` | **Capa de Presentación** | Gestiona la interfaz de usuario en consola, el renderizado de menús y la captura inicial de datos. |
-| `logic.py` | **Motor de Negocio** | Procesa los cálculos matemáticos, transacciones financieras y la mutación de los estados de las cuentas. |
-| `validaciones.py` | **Capa de Seguridad** | Módulo autónomo encargado de auditar que los montos, credenciales y operaciones cumplan con las reglas de negocio antes de ser procesados. |
+| `extraer_monto()` | **UPDATE / Escritura** | Valida la suficiencia de fondos frente al saldo actual. Actualiza la entidad SQL y mitiga errores mediante cláusulas de guarda. |
+| `depositar()` | **UPDATE / Escritura** | Audita que el monto sea un valor positivo flotante o entero, actualiza el registro físico en disco y confirma la transacción (`commit`). |
+| `cambiar_contrasena()`| **Lógica de Seguridad** | Evalúa de forma estricta la concordancia de cadenas y restringe el uso de contraseñas previas idénticas para mitigar riesgos. |
+| `validar_monto()` | **Sanitización de Datos** | Filtra entradas de usuario por consola. Bloquea caracteres alfabéticos o montos menores o iguales a cero, impidiendo excepciones en ejecución. |
 
 ---
 
-### ⚙️ Instalación y Ejecución
+### ⚙️ Instalación y Configuración Local
 
-Sigue estos pasos para clonar, configurar y ejecutar la simulación en tu entorno local:
+Sigue estos comandos detallados en tu terminal para probar la simulación en tu computadora:
 
-1. **Clonar el repositorio:**
+1. **Clonar el repositorio con persistencia relacional:**
    ```bash
    git clone https://github.com
    cd sistema_atm
    ```
 
-2. **Instalar las dependencias requeridas:**
+2. **Instalar el formateador visual de consola:**
    ```bash
    pip install colorama
    ```
 
-3. **Iniciar el sistema:**
+3. **Ejecutar el orquestador principal:**
    ```bash
    python app.py
    ```
+   *(Nota: El motor creará el archivo binario de base de datos `banco.db` de forma automática al momento de inicializar el programa).*
 
 ---
 
 ### 📄 Licencia
 
-Este proyecto está bajo la Licencia MIT. Consulta el archivo de origen para más detalles.
+Este software se distribuye bajo los términos de la Licencia MIT. Libre para fines educativos, académicos y desarrollo profesional continuo.
