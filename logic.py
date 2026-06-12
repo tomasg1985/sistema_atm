@@ -133,3 +133,5 @@ def cambiar_contrasena(contrasena_actual, nueva_contrasena, confirmacion):
         return(None, "Las contraseñas no coinciden", False)
 
     return(nueva_contrasena, "Contraseña actualizada con éxito", True)
+
+conexion.close()
